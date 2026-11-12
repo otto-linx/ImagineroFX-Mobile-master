@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "MiApp",
+    "slug": "mi-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.iimaginerofx.miapp",
+      "versionCode": 1,
+      "permissions": []
+    },
+    "extra": {
+      "eas": {
+        "projectId": "565b9e4f-ceb2-4ff6-b390-612a374465c6"
+      }
+    }
+  }
+}

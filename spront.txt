@@ -1,0 +1,2613 @@
+supaaseClient.js:
+
+import { createClient } from '@supabase/supabase-js';
+
+// URL y clave pública de tu proyecto Supabase (solo para pruebas, no producción)
+const SUPABASE_URL = 'https://pfhrhsrvuzwawqxkgvsd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmaHJoc3J2dXp3YXdxeGtndnNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1MTYzMjYsImV4cCI6MjA2NTA5MjMyNn0.OOxQmkqv--YH4NPxyYp7RukO1H7qUuTkAi3XIaPxOnI'
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+console.log('URL:', SUPABASE_URL);
+console.log('KEY:', SUPABASE_KEY.slice(0, 10) + '...'); // no muestres todo
+
+
+index.js
+
+import { registerRootComponent } from 'expo';
+
+import App from './App';
+
+// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
+// It also ensures that whether you load the app in Expo Go or in a native build,
+// the environment is set up appropriately
+registerRootComponent(App);
+
+
+app.js
+
+// App.js
+import React from 'react';
+import Toast from 'react-native-toast-message';
+import AppNavigator from './navigation/AppNavigator';
+import { CartProvider } from './context/CartContext'; // ✅ mantenemos el carrito
+import { ThemeProvider } from './context/ThemeContext';
+
+
+export default function App() {
+  return (
+    <>
+      <CartProvider>
+          <AppNavigator />
+      </CartProvider>
+      <Toast />
+    </>
+  );
+}
+
+
+src/TestConnection.js
+
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { supabase } from '../supabaseClient';
+
+const TestConnection = () => {
+  useEffect(() => {
+    const testDatabase = async () => {
+      try {
+        // Consulta a la tabla "users"
+        const { data, error } = await supabase.from('users').select();
+
+        if (error) {
+          console.error('❌ Error:', error.message);
+          return;
+        }
+
+        console.log('✅ Datos obtenidos:', data);
+      } catch (error) {
+        console.error('❌ Error:', error.message);
+      }
+    };
+
+    testDatabase();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text>Verifica la consola para resultados</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+export default TestConnection;
+
+screens:
+
+AboutScreen.js
+
+import React from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  Linking
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+export default function AboutScreen({ navigation }) {
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Acerca de Nosotros</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.section}>
+          <Text style={styles.title}>ImageneroFX</Text>
+          <Text style={styles.text}>
+            ImageneroFX es una empresa especializada en escenografía y ambientación. Creamos
+            experiencias inmersivas para eventos, producciones audiovisuales y espacios comerciales.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.subtitle}>Nuestra misión</Text>
+          <Text style={styles.text}>
+            Transformar espacios y contar historias a través de diseños escenográficos de alta calidad,
+            adaptados a las necesidades de cada cliente.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.subtitle}>Nuestra visión</Text>
+          <Text style={styles.text}>
+            Ser líderes en el mercado de la escenografía, reconocidos por nuestra creatividad,
+            innovación y excelencia en el servicio.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.subtitle}>Qué hacemos</Text>
+          <Text style={styles.text}>
+            • Diseño y montaje de escenarios para eventos y producciones.
+            {'\n'}• Venta y fabricación de productos escenográficos personalizados.
+            {'\n'}• Alquiler de mobiliario y elementos decorativos.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.subtitle}>Nuestros valores</Text>
+          <Text style={styles.text}>
+            • Creatividad{'\n'}
+            • Compromiso{'\n'}
+            • Calidad{'\n'}
+            • Puntualidad
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.contactButton}
+          onPress={() => Linking.openURL('mailto:imagenerofx@gmail.com')}
+        >
+          <Text style={styles.contactText}>Contáctanos</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.contactButton, styles.whatsappButton]}
+          onPress={() => {
+            const saludo = encodeURIComponent(`${getSaludo()}, quiero más información sobre ImageneroFX`);
+            Linking.openURL(`https://wa.me/573137978572?text=${saludo}`);
+          }}
+        >
+          <Ionicons name="logo-whatsapp" size={20} color="#FFF" style={{ marginRight: 8 }} />
+          <Text style={styles.contactText}>Contactar por WhatsApp</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// Función para saludo según la hora
+function getSaludo() {
+  const hora = new Date().getHours();
+  if (hora >= 6 && hora < 12) return 'Buenos días';
+  if (hora >= 12 && hora < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#FFF' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E63946',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingTop: 46, // <-- Agrega espacio superior para bajar el título
+  },
+  backButton: { marginRight: 12 },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  container: {
+    padding: 20,
+    backgroundColor: '#FAFAFA',
+  },
+  section: { marginBottom: 24 },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  text: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#555',
+  },
+  contactButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+    backgroundColor: '#457B9D',
+    paddingVertical: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+  },
+  whatsappButton: {
+    backgroundColor: '#25D366',
+    marginTop: 10,
+  },
+  contactText: {
+    fontSize: 16,
+    color: '#FFF',
+    fontWeight: '600',
+  },
+});
+
+
+AccountScreen.js
+
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  Animated
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../supabaseClient';
+import { useFocusEffect } from '@react-navigation/native';
+
+// Paleta de colores rojos
+const redTheme = {
+  primary: '#FF3B30',
+  secondary: '#FF6B6B',
+  background: '#FFF5F5',
+  card: '#FFFFFF',
+  text: '#1A1A1A',
+  textSecondary: '#5A5A5A',
+  divider: '#E0E0E0',
+  error: '#E74C3C',
+  neutral: '#F8F9FA'
+};
+
+export default function AccountScreen({ navigation }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fadeAnim] = useState(new Animated.Value(0));
+  
+  const styles = useMemo(() => createStyles(redTheme), [redTheme]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true
+      }).start();
+      
+      fetchUser();
+    }, [])
+  );
+
+  const fetchUser = async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user || null);
+    } catch (error) {
+      console.error('Error al cargar usuario:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    navigation.navigate('Home');
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={redTheme.primary} />
+        <Text style={styles.loadingText}>Cargando tu cuenta...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color={redTheme.icon} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Mi Cuenta</Text>
+        </View>
+
+        {/* Perfil del usuario con efecto gradiente */}
+        <View style={styles.profileSection}>
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatarBorder}>
+              <Image
+                source={{
+                  uri: user
+                    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email.split('@')[0])}&background=${redTheme.primary.replace('#', '')}&color=fff` 
+                    : `https://ui-avatars.com/api/?name=Invitado&background=${redTheme.neutral.replace('#', '')}&color=000000`, 
+                }}
+                style={styles.avatar}
+              />
+            </View>
+          </View>
+          
+          {user ? (
+            <>
+              <Text style={styles.userName}>{user.email.split('@')[0]}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+              
+              {/* Badge de premium */}
+              <View style={styles.premiumBadge}>
+                <Ionicons name="star" size={16} color="#fff" />
+                <Text style={styles.premiumText}>Cuenta Premium</Text>
+              </View>
+
+              {/* Información detallada */}
+              <View style={styles.userInfoContainer}>
+                <View style={styles.infoItem}>
+                  <Ionicons name="calendar-outline" size={18} color={redTheme.textSecondary} />
+                  <Text style={styles.infoText}>
+                    Miembro desde: {formatDate(user.created_at)}
+                  </Text>
+                </View>
+                <View style={styles.infoItem}>
+                  <Ionicons name="key-outline" size={18} color={redTheme.textSecondary} />
+                  <Text style={styles.infoText}>
+                    Último acceso: {formatDate(new Date())}
+                  </Text>
+                </View>
+              </View>
+            </>
+          ) : (
+            <Text style={styles.guestText}>Invitado</Text>
+          )}
+        </View>
+
+        {/* Estadísticas mejoradas */}
+        {user && (
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>24</Text>
+              <Text style={styles.statLabel}>Actividades</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>18</Text>
+              <Text style={styles.statLabel}>Completadas</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>92%</Text>
+              <Text style={styles.statLabel}>Éxito</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Sección de opciones actualizada */}
+        <View style={styles.optionsSection}>
+          <TouchableOpacity 
+            style={styles.optionItem}
+            onPress={() => navigation.navigate('PrivacyScreen')}
+          >
+            <View style={styles.optionIcon}>
+              <Ionicons name="shield-checkmark-outline" size={22} color={redTheme.icon} />
+            </View>
+            <Text style={styles.optionText}>Privacidad y Seguridad</Text>
+            <Ionicons name="chevron-forward" size={18} color={redTheme.textSecondary} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.optionItem}
+            onPress={() => navigation.navigate('SupportScreen')}
+          >
+            <View style={styles.optionIcon}>
+              <Ionicons name="help-circle-outline" size={22} color={redTheme.icon} />
+            </View>
+            <Text style={styles.optionText}>Ayuda y Soporte</Text>
+            <Ionicons name="chevron-forward" size={18} color={redTheme.textSecondary} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.optionItem}
+            onPress={() => navigation.navigate('AboutScreen')}
+          >
+            <View style={styles.optionIcon}>
+              <Ionicons name="information-circle-outline" size={22} color={redTheme.icon} />
+            </View>
+            <Text style={styles.optionText}>Acerca de la App</Text>
+            <Ionicons name="chevron-forward" size={18} color={redTheme.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Botones principales */}
+        <View style={styles.buttonsContainer}>
+          {user ? (
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Ionicons name="log-out-outline" size={20} color={redTheme.error} style={styles.buttonIcon} />
+              <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[styles.loginButton, { backgroundColor: redTheme.primary }]}
+                onPress={() => navigation.navigate('Login')}
+              >
+                <Ionicons name="log-in-outline" size={20} color="#fff" style={styles.buttonIcon} />
+                <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.signupButton, { borderColor: redTheme.primary }]}
+                onPress={() => navigation.navigate('Register')}
+              >
+                <Ionicons name="person-add-outline" size={20} color={redTheme.primary} style={styles.buttonIcon} />
+                <Text style={[styles.signupButtonText, { color: redTheme.primary }]}>Crear Cuenta</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        {/* Footer mejorado */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Versión 2.1.0 • Última actualización: {formatDate(new Date())}
+          </Text>
+          <View style={styles.badgeContainer}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>PRO</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </Animated.View>
+  );
+}
+
+// Nuevos estilos con tema rojo
+const createStyles = (theme) => {
+  const elevation = {
+    2: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 3.84,
+      elevation: 5,
+    }
+  };
+  
+  const getSafeElevation = (level) => {
+    return elevation && elevation[level] ? elevation[level] : {};
+  };
+
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.background,
+    },
+    loadingText: {
+      marginTop: 20,
+      fontSize: 16,
+      color: theme.textSecondary,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 20,
+      paddingTop: Platform.OS === 'android' ? 40 : 20,
+      backgroundColor: theme.card,
+      ...getSafeElevation(2),
+    },
+    backButton: {
+      padding: 5,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.text,
+    },
+    profileSection: {
+      alignItems: 'center',
+      padding: 25,
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      borderRadius: 20,
+      marginBottom: 15,
+      ...getSafeElevation(2),
+    },
+    avatarContainer: {
+      position: 'relative',
+      marginBottom: 15,
+    },
+    avatarBorder: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      borderWidth: 3,
+      borderColor: theme.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.card,
+    },
+    avatar: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      borderWidth: 3,
+      borderColor: theme.primary,
+    },
+    userName: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.text,
+      marginBottom: 5,
+    },
+    userEmail: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    guestText: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: theme.text,
+      marginTop: 10,
+    },
+    premiumBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.secondary,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      marginTop: 10,
+      marginBottom: 15,
+    },
+    premiumText: {
+      marginLeft: 8,
+      color: '#fff',
+      fontWeight: '600',
+      fontSize: 14,
+    },
+    userInfoContainer: {
+      width: '100%',
+      marginTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: theme.divider,
+      paddingTop: 15,
+    },
+    infoItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    infoText: {
+      marginLeft: 12,
+      fontSize: 15,
+      color: theme.textSecondary,
+    },
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      borderRadius: 15,
+      padding: 20,
+      ...getSafeElevation(2),
+      marginBottom: 20,
+    },
+    statItem: {
+      alignItems: 'center',
+      paddingHorizontal: 10,
+    },
+    statNumber: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.primary,
+      marginBottom: 5,
+    },
+    statLabel: {
+      fontSize: 14,
+      color: theme.textSecondary,
+    },
+    optionsSection: {
+      backgroundColor: theme.card,
+      marginHorizontal: 20,
+      borderRadius: 15,
+      paddingVertical: 10,
+      ...getSafeElevation(2),
+      marginBottom: 20,
+    },
+    optionItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 18,
+      paddingHorizontal: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.divider,
+    },
+    optionIcon: {
+      width: 35,
+      alignItems: 'center',
+    },
+    optionText: {
+      flex: 1,
+      fontSize: 16,
+      color: theme.text,
+      marginLeft: 10,
+    },
+    buttonsContainer: {
+      marginHorizontal: 20,
+      marginBottom: 20,
+    },
+    loginButton: {
+      borderRadius: 30,
+      paddingVertical: 16,
+      marginBottom: 15,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      ...getSafeElevation(2),
+    },
+    loginButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    signupButton: {
+      backgroundColor: theme.card,
+      borderWidth: 2,
+      borderColor: theme.primary,
+      borderRadius: 30,
+      paddingVertical: 14,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      ...getSafeElevation(2),
+    },
+    signupButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    logoutButton: {
+      backgroundColor: theme.card,
+      borderWidth: 2,
+      borderColor: theme.error,
+      borderRadius: 30,
+      paddingVertical: 14,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      ...getSafeElevation(2),
+    },
+    logoutButtonText: {
+      color: theme.error,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    buttonIcon: {
+      marginRight: 10,
+    },
+    footer: {
+      alignItems: 'center',
+      paddingVertical: 20,
+    },
+    footerText: {
+      fontSize: 13,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      marginBottom: 10,
+    },
+    badgeContainer: {
+      marginTop: 8,
+    },
+    badge: {
+      backgroundColor: theme.primary,
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 20,
+    },
+    badgeText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 12,
+    },
+  });
+};
+
+AddCardScreen.js
+import React, { useContext } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Image,
+  SafeAreaView
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { CartContext } from '../context/CartContext';
+
+export default function AddCardScreen({ navigation }) {
+  const { setPaymentMethod } = useContext(CartContext);
+
+  const handleSelectPayment = () => {
+    setPaymentMethod('cash');
+    Alert.alert(
+      'Método seleccionado', 
+      'Has elegido pagar contraentrega.',
+      [
+        { 
+          text: 'Continuar', 
+          onPress: () => navigation.goBack() 
+        }
+      ]
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={28} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Método de pago</Text>
+          <View style={{ width: 28 }} />
+        </View>
+
+        {/* Tarjeta principal con imagen destacada */}
+        <View style={styles.heroCard}>
+          <Image 
+            source={require('../assets/images/scenography-cash-delivery.png')} 
+            style={styles.heroImage} 
+          />
+          <View style={styles.heroOverlay}>
+            <Text style={styles.heroTitle}>Escenarios y Decorados</Text>
+            <Text style={styles.heroSubtitle}>Elige tu método de pago preferido</Text>
+          </View>
+        </View>
+
+        {/* Información sobre pago contraentrega */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Pago Contraentrega</Text>
+          
+          <View style={styles.benefitsContainer}>
+            <View style={styles.benefitItem}>
+              <View style={styles.benefitIconContainer}>
+                <Ionicons name="cash-outline" size={24} color="#4CAF50" />
+              </View>
+              <Text style={styles.benefitText}>Paga en efectivo cuando recibas tus elementos escenográficos</Text>
+            </View>
+            
+            <View style={styles.benefitItem}>
+              <View style={styles.benefitIconContainer}>
+                <Ionicons name="time-outline" size={24} color="#4CAF50" />
+              </View>
+              <Text style={styles.benefitText}>Ideal para producciones urgentes sin trámites previos</Text>
+            </View>
+            
+            <View style={styles.benefitItem}>
+              <View style={styles.benefitIconContainer}>
+                <Ionicons name="shield-checkmark-outline" size={24} color="#4CAF50" />
+              </View>
+              <Text style={styles.benefitText}>Revisa tus piezas teatrales o decorados antes de pagar</Text>
+            </View>
+            
+            <View style={styles.benefitItem}>
+              <View style={styles.benefitIconContainer}>
+                <Ionicons name="card-outline" size={24} color="#4CAF50" />
+              </View>
+              <Text style={styles.benefitText}>También aceptamos transferencias al recibir grandes órdenes</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Instrucciones detalladas */}
+        <View style={styles.instructionsCard}>
+          <Text style={styles.sectionTitle}>¿Cómo funciona?</Text>
+          
+          <View style={styles.step}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepText}>1</Text>
+            </View>
+            <Text style={styles.stepDescription}>Realiza tu pedido de elementos escenográficos normalmente</Text>
+          </View>
+          
+          <View style={styles.step}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepText}>2</Text>
+            </View>
+            <Text style={styles.stepDescription}>Nuestro equipo prepara tus piezas teatrales o ambientaciones</Text>
+          </View>
+          
+          <View style={styles.step}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepText}>3</Text>
+            </View>
+            <Text style={styles.stepDescription}>Recibe y revisa cuidadosamente tu pedido en el lugar de entrega</Text>
+          </View>
+          
+          <View style={styles.step}>
+            <View style={styles.stepNumber}>
+              <Text style={styles.stepText}>4</Text>
+            </View>
+            <Text style={styles.stepDescription}>Paga en efectivo o por transferencia al recibir tu pedido</Text>
+          </View>
+        </View>
+
+        {/* Información adicional */}
+        <View style={styles.additionalInfo}>
+          <View style={styles.infoItem}>
+            <Ionicons name="alert-circle" size={24} color="#FF9800" />
+            <Text style={styles.infoItemText}>
+              Ideal para grandes producciones donde se requiere inspección previa
+            </Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Ionicons name="document-text-outline" size={24} color="#4CAF50" />
+            <Text style={styles.infoItemText}>
+              No requiere documentación adicional ni verificación previa
+            </Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Ionicons name="time-outline" size={24} color="#2196F3" />
+            <Text style={styles.infoItemText}>
+              Disponible para entregas en menos de 24 horas
+            </Text>
+          </View>
+        </View>
+
+        {/* Selección de método */}
+        <TouchableOpacity 
+          style={styles.selectButton}
+          onPress={handleSelectPayment}
+        >
+          <Ionicons name="checkmark-circle" size={24} color="#fff" />
+          <Text style={styles.selectButtonText}>Seleccionar Pago Contraentrega</Text>
+        </TouchableOpacity>
+
+        {/* Nota importante */}
+        <View style={styles.noteContainer}>
+          <Ionicons name="information-circle" size={24} color="#FF9800" />
+          <Text style={styles.noteText}>
+            Al seleccionar esta opción, aceptas pagar el monto total al momento de recibir tu pedido.
+            Este método es especialmente recomendado para órdenes superiores a $500.
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  container: {
+    paddingBottom: 40,
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 15,
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 10,
+  },
+  backButton: {
+    padding: 5,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  heroCard: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  heroImage: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'cover',
+  },
+  heroOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 5,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  infoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  infoTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#d32f2f',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  benefitsContainer: {
+    marginTop: 10,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 15,
+  },
+  benefitIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e8f5e9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  benefitText: {
+    fontSize: 16,
+    color: '#555',
+    flex: 1,
+    lineHeight: 22,
+  },
+  instructionsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  step: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 15,
+  },
+  stepNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#d32f2f',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+    marginTop: 5,
+  },
+  stepText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  stepDescription: {
+    fontSize: 16,
+    color: '#555',
+    flex: 1,
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+  selectButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#d32f2f',
+    borderRadius: 12,
+    paddingVertical: 18,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  selectButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  noteContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF8E1',
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  noteText: {
+    fontSize: 14,
+    color: '#5D4037',
+    marginLeft: 10,
+    flex: 1,
+  },
+  additionalInfo: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 15,
+  },
+  infoItemText: {
+    marginLeft: 12,
+    fontSize: 15,
+    color: '#555',
+    flex: 1,
+    lineHeight: 20,
+  }
+});
+
+AllProductsScreen.js
+
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
+  Image, 
+  TouchableOpacity, 
+  TextInput, 
+  ScrollView,
+  Dimensions
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+// ====== NUEVOS PRODUCTOS Y CATEGORÍAS ======
+const products = [
+  {
+    id: '12',
+    name: 'Máscara Robótica Futurista',
+    price: 3000000,
+    category: 'Navidad',
+    rating: 4.8,
+    image: require('../assets/producto1.jpg'),
+    description: 'Mascara de alta tecnología con luces LED y efectos de sonido',
+  },
+  { 
+    id: 1, 
+    name: 'Escultura jirafa y cebra de navidad', 
+    price: 5000000, 
+    category: 'Navidad', 
+    rating: 4.8, 
+    image: require('../assets/tree.jpg') 
+  },
+  { 
+    id: 2, 
+    name: 'Castillo zoologico', 
+    price: 40000000, 
+    category: 'Navidad', 
+    rating: 4.5, 
+    image: require('../assets/lights.jpg') 
+  },
+  { 
+    id: 3, 
+    name: 'Oso Polar con Guitarra', 
+    price: 1500000, 
+    category: 'Navidad', 
+    rating: 4.7, 
+    image: require('../assets/polar-bear-guitar.jpg') 
+  },
+  { 
+    id: 4, 
+    name: 'Duende Musical', 
+    price: 2000000, 
+    category: 'Navidad', 
+    rating: 4.6, 
+    image: require('../assets/santa.jpg') 
+  },
+  // Productos de Zoológico
+  { 
+    id: 5, 
+    name: 'Mono de Zoologico', 
+    price: 300000, 
+    category: 'Zoológico', 
+    rating: 4.9, 
+    image: require('../assets/monkey.jpg') 
+  },
+  { 
+    id: 6, 
+    name: 'Oso Polar Peluche', 
+    price: 300000, 
+    category: 'Zoológico', 
+    rating: 4.4, 
+    image: require('../assets/polar-bear.jpg') 
+  },
+  { 
+    id: 7, 
+    name: 'Pingüino Decorativo', 
+    price: 1000000, 
+    category: 'Zoológico', 
+    rating: 4.6, 
+    image: require('../assets/penguin.jpg') 
+  },
+  // Productos de Feria
+  { 
+    id: 8, 
+    name: 'Avión tematico', 
+    price: 2000000, 
+    category: 'Feria', 
+    rating: 4.3, 
+    image: require('../assets/plane.jpg') 
+  },
+  { 
+    id: 9, 
+    name: 'Estatuas Faraon x3', 
+    price: 4000000, 
+    category: 'Feria', 
+    rating: 4.2, 
+    image: require('../assets/statues.jpg') 
+  },
+  {
+    id: '10',
+    name: 'Máscara Cara de Michael Jackson',
+    price: 800000,
+    category: 'Navidad',
+    rating: 4.5,
+    image: require('../assets/producto2.jpg'),
+    description: 'Edición especial con detalles en oro y efectos luminiscentes',
+  },
+  {
+    id: '11',
+    name: 'Busto Faraón Egipcio',
+    price: 800000,
+    category: 'Medieval',
+    rating: 4.7,
+    image: require('../assets/producto3.jpg'),
+    description: 'Diseño inspirado en los faraones con detalles en oro auténtico',
+  },
+  {
+    id: '13',
+    name: 'Moon Rey Leon',
+    price: 500000,
+    category: 'Zoológico',
+    rating: 4.9,
+    image: require('../assets/producto4.jpg'),
+    description: 'Disfraz infantil oficial de Mowgli con tela de alta resistencia',
+  },
+  {
+    id: '14',
+    name: 'Santa Claus Pezcador',
+    price: 1000000,
+    category: 'Feria',
+    rating: 4.6,
+    image: require('../assets/producto5.jpg'),
+    description: 'Figura decorativa de cerámica resistente a intemperie',
+  },
+  {
+    id: '15',
+    name: 'Set Reyes Magos',
+    price: 7000000,
+    category: 'Navidad',
+    rating: 4.4,
+    image: require('../assets/producto6.jpg'),
+    description: 'Colección completa de figuras navideñas con detalles dorados',
+  },
+];
+const categories = [
+  { id: 'all', name: 'Todos', icon: 'apps' },
+  { id: 2, name: 'Utilería', icon: 'construct', value: 'Utilería' },
+  { id: 'Navidad', name: 'Navidad', icon: 'gift' },
+  { id: 'Zoológico', name: 'Zoológico', icon: 'paw' },
+  { id: 'Feria', name: 'Feria', icon: 'balloon' },
+  { id: 'Medieval', name: 'Medieval', icon: 'shield' },
+];
+
+export default function AllProductsScreen({ navigation }) {
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [materialFilter, setMaterialFilter] = useState('');
+  const [colorFilter, setColorFilter] = useState('');
+  const [priceFilter, setPriceFilter] = useState([0, 5000]);
+
+  const allMaterials = [...new Set(products.map(p => p.material))];
+  const allColors = [...new Set(products.flatMap(p => (p.colors ?? '').split(', ')))];
+
+  const handleSearch = (text) => {
+    setSearch(text);
+    filterProducts(text, selectedCategory, materialFilter, colorFilter, priceFilter);
+  };
+
+  const handleCategory = (categoryId) => {
+    setSelectedCategory(categoryId);
+    filterProducts(search, categoryId, materialFilter, colorFilter, priceFilter);
+  };
+
+  const applyFilters = () => {
+    filterProducts(search, selectedCategory, materialFilter, colorFilter, priceFilter);
+    setShowFilters(false);
+  };
+
+  const resetFilters = () => {
+    setSearch('');
+    setSelectedCategory('all');
+    setMaterialFilter('');
+    setColorFilter('');
+    setPriceFilter([0, 5000]);
+    setFilteredProducts(products);
+    setShowFilters(false);
+  };
+
+  const filterProducts = (searchText = '', categoryId = 'all', material = '', color = '', price = [0, 5000]) => {
+    let result = [...products];
+    
+    // Filtrar por categoría
+    if (categoryId !== 'all') {
+      result = result.filter(p => p.category.toLowerCase().includes(categoryId.toLowerCase()));
+    }
+    
+    // Filtrar por búsqueda
+    if (searchText) {
+      const searchLower = searchText.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(searchLower) || 
+        p.category.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Filtrar por material
+    if (material) {
+      result = result.filter(p => p.material.toLowerCase().includes(material.toLowerCase()));
+    }
+    
+    // Filtrar por color
+    if (color) {
+      result = result.filter(p => p.colors.toLowerCase().includes(color.toLowerCase()));
+    }
+    
+    // Filtrar por precio
+    result = result.filter(p => {
+      const productPrice = parseFloat(p.price);
+      return productPrice >= price[0] && productPrice <= price[1];
+    });
+    
+    setFilteredProducts(result);
+  };
+
+  const renderProduct = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.productCard}
+      onPress={() => navigation.navigate('Product', { product: item })}
+      activeOpacity={0.9}
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={item.image}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={styles.productInfo}>
+        <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.productCategory}>{item.category}</Text>
+        <View style={styles.infoFooter}>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={14} color="#FFD700" />
+            <Text style={styles.ratingText}>{item.rating}</Text>
+          </View>
+          <Text style={styles.productPrice}>
+            ${item.price.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderCategory = ({ item }) => {
+    const isSelected = selectedCategory === item.id;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.categoryButton,
+          isSelected ? styles.categorySelected : styles.categoryUnselected
+        ]}
+        onPress={() => handleCategory(item.id)}
+        activeOpacity={0.85}
+      >
+        <View style={[
+          styles.categoryIconContainer,
+          isSelected && styles.categoryIconSelected
+        ]}>
+          <Ionicons 
+            name={item.icon} 
+            size={20} 
+            color={isSelected ? "#fff" : "#d32f2f"} 
+          />
+        </View>
+        <Text style={isSelected ? styles.categoryTextSelected : styles.categoryTextUnselected}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Botón de retroceso */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="#d32f2f" />
+      </TouchableOpacity>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Nuestra Colección</Text>
+      </View>
+      
+      {/* Búsqueda */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#d32f2f" style={styles.searchIcon} />
+        <TextInput
+          placeholder="Buscar elementos escénicos..."
+          placeholderTextColor="#d32f2f"
+          value={search}
+          onChangeText={handleSearch}
+          style={styles.searchInput}
+        />
+      </View>
+      
+      {/* Categorías */}
+      <View style={styles.categoriesContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesList}
+        >
+          {categories.map(category => (
+            <View key={category.id}>
+              {renderCategory({ item: category })}
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+      
+      {/* Resultados */}
+      <View style={styles.resultsContainer}>
+        <View style={styles.resultsHeader}>
+          <Text style={styles.sectionTitle}>
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'} encontrados
+          </Text>
+          <TouchableOpacity style={styles.sortButton}>
+            <Ionicons name="swap-vertical" size={16} color="#d32f2f" />
+            <Text style={styles.sortText}>Ordenar</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.productsContainer}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="sad-outline" size={60} color="#d1d5db" />
+              <Text style={styles.emptyTitle}>No se encontraron productos</Text>
+              <Text style={styles.emptyText}>Intenta con otros filtros o términos</Text>
+              <TouchableOpacity 
+                style={styles.resetFiltersButton}
+                onPress={resetFilters}
+              >
+                <Text style={styles.resetFiltersText}>Limpiar filtros</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingTop: 50,
+    paddingHorizontal: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#d32f2f',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    height: 54,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#ffcdd2',
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#d32f2f',
+    fontWeight: '500',
+    backgroundColor: 'transparent',
+  },
+  categoriesContainer: {
+    marginBottom: 20,
+  },
+  categoriesList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+    marginBottom: 8,
+    gap: 8, // Espacio entre categorías
+  },
+  categoryButton: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginRight: 12, // Más espacio entre botones
+    width: 88,
+    height: 78,
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffcdd2',
+  },
+  categorySelected: {
+    backgroundColor: '#d32f2f',
+    borderColor: '#d32f2f',
+  },
+  categoryUnselected: {
+    backgroundColor: '#fff',
+    borderColor: '#ffcdd2',
+  },
+  categoryIconContainer: {
+    width: 36,
+    height: 36,
+    backgroundColor: '#ffcdd2',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  categoryIconSelected: {
+    backgroundColor: '#b71c1c',
+  },
+  categoryTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  categoryTextUnselected: {
+    color: '#d32f2f',
+    fontWeight: 'bold',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  resultsContainer: {
+    flex: 1,
+  },
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#ffcdd2',
+  },
+  sortText: {
+    color: '#d32f2f',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 4,
+  },
+  productCard: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    marginBottom: 16,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  imageContainer: {
+    position: 'relative',
+    height: 160,
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+  productInfo: {
+    padding: 12,
+    paddingBottom: 40,
+  },
+  productName: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  productCategory: {
+    color: '#d32f2f',
+    fontSize: 12,
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
+  infoFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffebee',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#d32f2f',
+    fontWeight: '600',
+  },
+  productPrice: {
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#d32f2f',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  resetFiltersButton: {
+    backgroundColor: '#ffcdd2',
+    padding: 12,
+    borderRadius: 8,
+  },
+  resetFiltersText: {
+    color: '#d32f2f',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  productsContainer: {
+    paddingBottom: 100,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 48,
+    left: 12,
+    zIndex: 10,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 6,
+    elevation: 2,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.10,
+    shadowRadius: 4,
+  },
+});
+
+CartScreen.js
+
+import React, { useContext } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  ImageBackground
+} from 'react-native';
+import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
+import { CartContext } from '../context/CartContext';
+
+export default function CartScreen({ navigation }) {
+  const { cartItems, removeFromCart, updateQuantity } = useContext(CartContext);
+  const [fadeAnim] = React.useState(new Animated.Value(1));
+
+  const total = cartItems
+    .reduce((sum, item) => sum + 
+      (Number(item.price) || 0) * 
+      (Number(item.quantity || 1)), 0);
+
+  const handleRemove = (id) => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true
+    }).start(() => {
+      removeFromCart(id);
+      fadeAnim.setValue(1);
+    });
+  };
+
+  const renderItem = ({ item }) => (
+    <Animated.View 
+      style={[
+        styles.item,
+        { opacity: fadeAnim }
+      ]}
+    >
+      <View style={styles.itemImage}>
+        {item.image ? (
+          <ImageBackground 
+            source={item.image} 
+            style={styles.productImage}
+            imageStyle={{ borderRadius: 8 }}
+          >
+            <View style={styles.imageOverlay} />
+          </ImageBackground>
+        ) : (
+          <View style={[styles.productImage, styles.imagePlaceholder]}>
+            <MaterialCommunityIcons name="theater" size={28} color="#fff" />
+          </View>
+        )}
+      </View>
+      
+      <View style={styles.info}>
+        <Text style={styles.name}>{item.name || 'Producto escenográfico'}</Text>
+        <Text style={styles.category}>Escenografía / {item.category || 'General'}</Text>
+        
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>
+            ${(Number(item.price).toFixed(2))}
+          </Text>
+          
+          <View style={styles.quantityControls}>
+            <TouchableOpacity 
+              style={styles.quantityButton}
+              onPress={() => updateQuantity(item.id, 'decrease')}
+            >
+              <MaterialCommunityIcons name="minus" size={14} color="#fff" />
+            </TouchableOpacity>
+            
+            <Text style={styles.quantityText}>{item.quantity || 1}</Text>
+            
+            <TouchableOpacity 
+              style={styles.quantityButton}
+              onPress={() => updateQuantity(item.id, 'increase')}
+            >
+              <MaterialCommunityIcons name="plus" size={14} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
+      <TouchableOpacity 
+        style={styles.removeButton}
+        onPress={() => handleRemove(item.id)}
+      >
+        <MaterialCommunityIcons name="close" size={18} color="#fff" />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+
+  return (
+    <View style={styles.container}>
+      {/* Header con efecto de telón */}
+      <ImageBackground 
+        source={require('../assets/curtain_pattern.jpg')} 
+        style={styles.header}
+        imageStyle={{ borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}
+      >
+        <View style={styles.headerOverlay} />
+        <Text style={styles.title}>🛒 Carrito de Compras</Text>
+        <Text style={styles.subtitle}>
+          {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'} en tu carrito
+        </Text>
+      </ImageBackground>
+
+      <View style={styles.content}>
+        {cartItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIcon}>
+              <MaterialCommunityIcons name="theater" size={60} color="#d32f2f" />
+            </View>
+            <Text style={styles.emptyTitle}>¡Tu carrito está vacío!</Text>
+            <Text style={styles.emptyText}>Explora nuestro catálogo de productos escenográficos</Text>
+            <TouchableOpacity 
+              style={styles.continueShopping}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.continueText}>Ver productos</Text>
+              <MaterialCommunityIcons name="arrow-right" size={18} color="#d32f2f" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <FlatList
+              data={cartItems}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+              contentContainerStyle={styles.listContainer}
+              ListHeaderComponent={
+                <Text style={styles.sectionTitle}>Tus productos escenográficos</Text>
+              }
+            />
+
+            <View style={styles.summary}>
+              <View style={styles.totalContainer}>
+                <View>
+                  <Text style={styles.totalLabel}>Subtotal</Text>
+                  <Text style={styles.shippingText}>Envío calculado al finalizar</Text>
+                </View>
+                <Text style={styles.totalAmount}>${total.toFixed(2)}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.checkoutButton}
+                onPress={() => navigation.navigate('Checkout', { total })}
+              >
+                <MaterialCommunityIcons name="credit-card-check" size={22} color="#fff" />
+                <Text style={styles.checkoutText}>Finalizar compra</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.continueButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={styles.continueText}>Seguir comprando</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafafa',
+  },
+  header: {
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(178, 8, 8, 0.85)',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#ffd54f',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  content: {
+    flex: 1,
+    padding: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 15,
+    marginTop: 5,
+    paddingLeft: 5,
+  },
+  listContainer: {
+    paddingBottom: 120,
+  },
+  item: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 15,
+    elevation: 3,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderLeftWidth: 4,
+    borderLeftColor: '#d32f2f',
+  },
+  itemImage: {
+    marginRight: 15,
+  },
+  productImage: {
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imagePlaceholder: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(211, 47, 47, 0.15)',
+    borderRadius: 8,
+  },
+  info: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  name: {
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#222',
+    marginBottom: 4,
+  },
+  category: {
+    fontSize: 13,
+    color: '#d32f2f',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    padding: 2,
+  },
+  quantityButton: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#d32f2f',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginHorizontal: 8,
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  removeButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  summary: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+  },
+  shippingText: {
+    fontSize: 12,
+    color: '#777',
+    marginTop: 3,
+  },
+  totalAmount: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#d32f2f',
+  },
+  checkoutButton: {
+    padding: 16,
+    backgroundColor: '#d32f2f',
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    marginBottom: 12,
+  },
+  checkoutText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '700',
+    marginLeft: 10,
+  },
+  continueButton: {
+    padding: 12,
+    borderWidth: 2,
+    borderColor: '#d32f2f',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  continueText: {
+    color: '#d32f2f',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30,
+  },
+  emptyIcon: {
+    backgroundColor: '#fbe9e7',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#d32f2f',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 24,
+  },
+  continueShopping: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderWidth: 2,
+    borderColor: '#d32f2f',
+    borderRadius: 30,
+  },
+});
+
+CheckoutScreen.js
+
+import React, { useContext, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Alert,
+  Animated,
+  Dimensions
+} from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CartContext } from '../context/CartContext';
+
+const { width } = Dimensions.get('window');
+
+export default function CheckoutScreen({ navigation }) {
+  const { cartItems } = useContext(CartContext);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [scaleAnim] = useState(new Animated.Value(1));
+
+  const toggleProductSelection = (product) => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true
+      })
+    ]).start();
+    
+    setSelectedProducts((prev) =>
+      prev.some((p) => p.id === product.id)
+        ? prev.filter((p) => p.id !== product.id)
+        : [...prev, product]
+    );
+  };
+
+  const handleProceedToPayment = () => {
+    if (selectedProducts.length === 0) {
+      Alert.alert('Selección requerida', 'Por favor selecciona al menos un producto para continuar.');
+      return;
+    }
+    navigation.navigate('Payment', { selectedProducts });
+  };
+
+  const total = selectedProducts.reduce(
+    (sum, item) => sum + item.price * (item.quantity || 1),
+    0
+  );
+
+  return (
+    <View style={styles.container}>
+      {/* Encabezado con efecto de telón */}
+      <View style={styles.header}>
+        <View style={styles.headerOverlay} />
+        <Text style={styles.title}>Finalización de Compra</Text>
+        <Text style={styles.subtitle}>Selecciona los productos a pagar</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        {cartItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <MaterialCommunityIcons name="theater" size={60} color="#d32f2f" />
+            <Text style={styles.emptyTitle}>Carrito Vacío</Text>
+            <Text style={styles.emptyText}>No hay productos en tu carrito</Text>
+            <TouchableOpacity 
+              style={styles.shoppingButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.shoppingText}>Volver a productos</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>Tus Productos Escenográficos</Text>
+            
+            {cartItems.map((product) => {
+              const isSelected = selectedProducts.some((p) => p.id === product.id);
+              return (
+                <Animated.View
+                  key={product.id}
+                  style={[
+                    styles.productContainer,
+                    isSelected && styles.selectedProduct,
+                    { transform: [{ scale: scaleAnim }] }
+                  ]}
+                >
+                  <TouchableOpacity
+                    onPress={() => toggleProductSelection(product)}
+                    activeOpacity={0.8}
+                    style={styles.productTouchable}
+                  >
+                    <View style={styles.productContent}>
+                      <View style={styles.checkboxContainer}>
+                        <View style={[
+                          styles.checkbox,
+                          isSelected && styles.checkboxSelected
+                        ]}>
+                          {isSelected && (
+                            <MaterialCommunityIcons 
+                              name="check" 
+                              size={18} 
+                              color="#fff" 
+                            />
+                          )}
+                        </View>
+                      </View>
+                      
+                      {product.image ? (
+                        <Image
+                          source={
+                            typeof product.image === 'string'
+                              ? { uri: product.image }
+                              : product.image
+                          }
+                          style={styles.productImage}
+                        />
+                      ) : (
+                        <View style={styles.imagePlaceholder}>
+                          <MaterialCommunityIcons 
+                            name="theater" 
+                            size={24} 
+                            color="#fff" 
+                          />
+                        </View>
+                      )}
+                      
+                      <View style={styles.textContainer}>
+                        <Text 
+                          style={styles.productText}
+                          numberOfLines={1}
+                        >
+                          {product.name || 'Producto escenográfico'}
+                        </Text>
+                        <Text style={styles.categoryText}>
+                          {product.category || 'Escenografía'}
+                        </Text>
+                      </View>
+                      
+                      <View style={styles.priceContainer}>
+                        <Text style={styles.priceText}>
+                          ${Number(product.price).toFixed(2)}
+                        </Text>
+                        <Text style={styles.quantityText}>
+                          x {product.quantity || 1}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </>
+        )}
+      </ScrollView>
+
+      {/* Resumen de compra */}
+      <View style={styles.summaryContainer}>
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Total seleccionado:</Text>
+          <Text style={styles.totalAmount}>
+            ${total.toFixed(2)}
+          </Text>
+        </View>
+        
+        <TouchableOpacity
+          style={[
+            styles.payButton,
+            selectedProducts.length === 0 && styles.disabledButton,
+          ]}
+          onPress={handleProceedToPayment}
+          disabled={selectedProducts.length === 0}
+        >
+          <MaterialCommunityIcons 
+            name="credit-card-check" 
+            size={24} 
+            color="#fff" 
+          />
+          <Text style={styles.payButtonText}>Continuar al pago</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>Seguir comprando</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafafa',
+  },
+  header: {
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    backgroundColor: '#d32f2f',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(178, 8, 8, 0.85)',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#ffd54f',
+    textAlign: 'center',
+    marginTop: 5,
+    fontWeight: '500',
+  },
+  contentContainer: {
+    padding: 15,
+    paddingBottom: 150,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 15,
+    marginTop: 10,
+    paddingLeft: 5,
+  },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#d32f2f',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 25,
+  },
+  shoppingButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    backgroundColor: '#d32f2f',
+    borderRadius: 25,
+  },
+  shoppingText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  productContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginBottom: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  selectedProduct: {
+    borderLeftWidth: 5,
+    borderLeftColor: '#d32f2f',
+    backgroundColor: '#fbe9e7',
+  },
+  productTouchable: {
+    padding: 15,
+  },
+  productContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkboxContainer: {
+    marginRight: 15,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#d32f2f',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: '#d32f2f',
+    borderColor: '#d32f2f',
+  },
+  productImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 15,
+  },
+  imagePlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  productText: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#222',
+    marginBottom: 3,
+  },
+  categoryText: {
+    fontSize: 13,
+    color: '#d32f2f',
+    fontWeight: '500',
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+    marginLeft: 10,
+  },
+  priceText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+    marginBottom: 3,
+  },
+  quantityText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  summaryContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+  },
+  totalAmount: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#d32f2f',
+  },
+  payButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#d32f2f',
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 3,
+    shadowColor: '#d32f2f',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  disabledButton: {
+    backgroundColor: '#bdbdbd',
+    shadowColor: '#9e9e9e',
+  },
+  payButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '700',
+    marginLeft: 10,
+  },
+  backButton: {
+    padding: 12,
+    borderWidth: 2,
+    borderColor: '#d32f2f',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: '#d32f2f',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+

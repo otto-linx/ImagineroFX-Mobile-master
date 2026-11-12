@@ -1,0 +1,1828 @@
+navigation/AppNavigator.js
+
+import React, { useEffect, useState } from 'react';
+import { 
+  NavigationContainer, 
+  DefaultTheme 
+} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../supabaseClient';
+import { ActivityIndicator, View, StyleSheet, Text } from 'react-native';
+
+// Importa todos los componentes como funciones (sin llaves)
+import HomeScreen from '../screens/HomeScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import AllProductsScreen from '../screens/AllProductsScreen';
+import CartScreen from '../screens/CartScreen';
+import AccountScreen from '../screens/AccountScreen';
+import LoginScreen from '../screens/LoginScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import ProductScreen from '../screens/ProductScreen';
+import CheckoutScreen from '../screens/CheckoutScreen';
+import PaymentScreen from '../screens/PaymentScreen';
+import AddCardScreen from '../screens/AddCardScreen';
+import SpecialOffersScreen from '../screens/SpecialOffersScreen';
+import PrivacyScreen from '../screens/PrivacyScreen'; // Importa la nueva pantalla aquí
+import SupportScreen from '../screens/SupportScreen';
+import AboutScreen from '../screens/AboutScreen'; // Importa la pantalla About aquí
+
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+// Tema personalizado
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#ffffff',
+  },
+};
+
+// Pantalla de carga
+function LoadingScreen() {
+  return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#d32f2f" />
+      <Text style={styles.loadingText}>Cargando...</Text>
+    </View>
+  );
+}
+
+// Navegación de pestañas
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: '#d32f2f',
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 60,
+        },
+        tabBarIcon: ({ color, size, focused }) => {
+          let iconName;
+          switch (route.name) {
+            case 'Home':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'Cart':
+              iconName = focused ? 'cart' : 'cart-outline';
+              break;
+            case 'Account':
+              iconName = focused ? 'person' : 'person-outline';
+              break;
+            case 'Offers':
+              iconName = focused ? 'pricetag' : 'pricetag-outline';
+              break;
+            default:
+              iconName = 'ellipse-outline';
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
+      <Tab.Screen name="Offers" component={SpecialOffersScreen} options={{ title: 'Ofertas' }} />
+      <Tab.Screen name="Cart" component={CartScreen} options={{ title: 'Carrito' }} />
+      <Tab.Screen name="Account" component={AccountScreen} options={{ title: 'Cuenta' }} />
+    </Tab.Navigator>
+  );
+}
+
+// Navegador principal
+export default function AppNavigator() {
+  const [isSessionChecked, setIsSessionChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const getCurrentSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsLoggedIn(!!session);
+      } catch (error) {
+        console.error("Error obteniendo sesión:", error);
+      } finally {
+        setIsSessionChecked(true);
+      }
+    };
+
+    // Listener para cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setIsLoggedIn(!!session);
+      }
+    );
+
+    getCurrentSession();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (!isSessionChecked) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <NavigationContainer theme={MyTheme}>
+      <Stack.Navigator 
+        screenOptions={{ 
+          headerShown: false,
+          animation: 'slide_from_right'
+        }}
+      >
+        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="Login" component={LoginScreen} options={{ presentation: 'modal' }} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} options={{ presentation: 'modal' }} />
+        <Stack.Screen name="Product" component={ProductScreen} />
+        <Stack.Screen name="Checkout" component={CheckoutScreen} />
+        <Stack.Screen name="Payment" component={PaymentScreen} />
+        <Stack.Screen name="AddCard" component={AddCardScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="AllProducts" component={AllProductsScreen} />
+        <Stack.Screen name="PrivacyScreen" component={PrivacyScreen} />
+        <Stack.Screen name="SupportScreen" component={SupportScreen} />
+        <Stack.Screen name="AboutScreen" component={AboutScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  loadingText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
+  },
+});
+
+
+data/ catageories.js
+
+const categories = [
+    {
+        id: 1,
+        name: 'Escenografía Profesional',
+        description: 'Elementos para crear mundos imaginarios',
+        image: require('../assets/images/scenery.jpg'),
+        icon: 'theater-comedy',
+        tags: ['Decorados', 'Telones', 'Estructuras modulares']
+    },
+    {
+        id: 2,
+        name: 'Atrezzo Creativo',
+        description: 'Objetos que dan vida a tus personajes',
+        image: require('../assets/images/props.jpg'),
+        icon: 'props',
+        tags: ['Armas ficticias', 'Objetos de época', 'Reliquias']
+    },
+    {
+        id: 3,
+        name: 'Efectos Especiales',
+        description: 'Magia técnica para escenas impactantes',
+        image: require('../assets/images/fx.jpg'),
+        icon: 'auto-awesome',
+        tags: ['Pirotecnia controlada', 'Simuladores climáticos', 'Efectos ópticos']
+    },
+    {
+        id: 4,
+        name: 'Iluminación Escénica',
+        description: 'Transforma espacios con luz dramática',
+        image: require('../assets/images/lighting.jpg'),
+        icon: 'lightbulb',
+        tags: ['LED inteligente', 'Proyectores', 'Efectos atmosféricos']
+    },
+    {
+        id: 5,
+        name: 'Vestuario de Personaje',
+        description: 'Trajes que definen identidades',
+        image: require('../assets/images/costumes.jpg'),
+        icon: 'checkroom',
+        tags: ['Época histórica', 'Ciencia ficción', 'Fantasía épica']
+    },
+    {
+        id: 6,
+        name: 'Ambientación Total',
+        description: 'Servicio completo para producciones',
+        image: require('../assets/images/ambientation.jpg'),
+        icon: 'location-city',
+        tags: ['Diseño de sets', 'Construcción', 'Dirección artística']
+    }
+];
+
+export default categories;
+
+
+
+data/products.js
+
+const products = [
+    {
+        id: 1,
+        name: 'Cabeza Escultórica Michael Jackson',
+        category: 'Escenografía Profesional',
+        price: 450,
+        image: require('../assets/images/redbag.jpg'), // Usando redbag.jpg como cabeza escultórica
+        description: 'Réplica hiperrealista para escenas biográficas o musicales',
+        material: 'Latex de alta densidad',
+        dimensions: '35x25x40 cm',
+        era: '1980s'
+    },
+    {
+        id: 2,
+        name: 'Sombrero Steampunk Articulado',
+        category: 'Vestuario de Personaje',
+        price: 320,
+        image: require('../assets/images/iphone.jpg'), // Usando iphone.jpg como sombrero
+        description: 'Sombrero mecánico con engranajes móviles y lentes intercambiables',
+        tags: ['ciencia ficción', 'fantasía victoriana'],
+        customizable: true
+    },
+    {
+        id: 3,
+        name: 'Loro Mecánico para Escena',
+        category: 'Atrezzo Creativo',
+        price: 680,
+        image: require('../assets/images/redshirt.jpg'), // Usando redshirt.jpg como loro mecánico
+        description: 'Autómata parlante con movimiento realista y control remoto',
+        features: ['15 frases preprogramadas', 'alas móviles', 'sensor de proximidad']
+    },
+    {
+        id: 4,
+        name: "Máscara de Médico de la Peste",
+        category: "Vestuario de Personaje",
+        price: 290,
+        image: require('../assets/images/perfume.jpg'), // Usando perfume.jpg como máscara
+        description: "Réplica histórica para producciones de época o distopías",
+        historicalAccuracy: "Siglo XVII",
+        materials: ["Cuero envejecido", "Lentes de cristal tallado"]
+    },
+    {
+        id: 5,
+        name: "Altavoces Vintage de Escenario",
+        category: "Escenografía Profesional",
+        price: 820,
+        image: require('../assets/images/shoes.jpg'), // Usando shoes.jpg como altavoces
+        description: "Prop funcional con sonido real para recreaciones musicales",
+        specs: ["Potencia: 120W", "Conectividad Bluetooth", "Aspecto años 50"]
+    },
+    {
+        id: 6,
+        name: "Telón de Terciopelo Rojo",
+        category: "Escenografía Profesional",
+        price: 1250,
+        image: require('../assets/images/watch.jpg'), // Usando watch.jpg como telón
+        description: "8 metros de telón teatral con sistema de despliegue manual",
+        material: "Terciopelo de algodón",
+        weight: "42 kg"
+    },
+    {
+        id: 7,
+        name: "Kit de Herramientas de Escenógrafo",
+        category: "Ambientación Total",
+        price: 380,
+        image: require('../assets/images/mastercard.png'), // Usando mastercard.png como kit
+        description: "Set profesional para montaje rápido de decorados",
+        includes: ["Martillo escénico", "Alicates multiusos", "Cinta métrica láser"]
+    },
+    {
+        id: 8,
+        name: "Lámpara de Quirófano Vintage",
+        category: "Iluminación Escénica",
+        price: 760,
+        image: require('../assets/images/kitchen.jpg'), // Usando kitchen.jpg como lámpara
+        description: "Iluminación ajustable para escenas médicas o de laboratorio",
+        lightingType: "LED regulable (3000K-6500K)",
+        powerSource: "Batería recargable"
+    }
+];
+
+export default products;
+
+
+data/promotions.js
+
+// data/promotions.js
+export default [
+  {
+    id: 1,
+    title: 'Escenas Cinematográficas',
+    subtitle: 'Descuento especial para productos usados en producciones audiovisuales',
+    image: require('../assets/images/cabeza_michael.jpg'),
+    category: 'Cine/TV',
+    discount: 30,
+    highlight: true,
+    link: '/cine'
+  },
+  {
+    id: 2,
+    title: 'Colección Steampunk',
+    subtitle: 'Nuevos accesorios inspirados en el estilo industrial-victoriano',
+    image: require('../assets/images/sombrero_steampunk.jpg'),
+    category: 'Estilos',
+    isNew: true,
+    link: '/steampunk'
+  },
+  {
+    id: 3,
+    title: 'Escenarios Personalizados',
+    subtitle: '¡Crea tu propio ambiente con nuestros paquetes de decoración!',
+    image: require('../assets/images/kitchen.jpg'),
+    category: 'Paquetes',
+    isFeatured: true,
+    cta: 'Ver opciones'
+  },
+  {
+    id: 4,
+    title: 'Oferta Temporal',
+    subtitle: 'Lámparas quirúrgicas al 40% de descuento (mientras duren existencias)',
+    image: require('../assets/images/lampara_quirófano.jpg'),
+    category: 'Iluminación',
+    discount: 40,
+    countdown: '03d 05h',
+    stock: 50
+  }
+];
+
+
+data/testimonials.js
+
+// data/testimonials.js
+export default [
+  {
+    id: 1,
+    name: 'Equipo de Producción',
+    role: 'Productor de cine - Película "Sombras del Pasado"',
+    comment: 'Los elementos escenográficos superaron nuestras expectativas. La atención personalizada y la precisión en los detalles hicieron que la ambientación histórica fuera perfecta.',
+    rating: 5,
+    avatar: require('../assets/avatars/team_cine.jpg'),
+    projectImage: require('../assets/testimonials/peli_sombras.jpg'),
+    mediaType: 'image',
+    category: 'Cine',
+    featured: true,
+    date: '03/24'
+  },
+  {
+    id: 2,
+    name: 'Centro Comercial',
+    role: 'Gerente de Marketing - Plaza Mayor',
+    comment: 'Implementamos sus escenarios temáticos para nuestra campaña navideña. La durabilidad de los materiales y la originalidad del diseño generaron un 40% más de tráfico este año.',
+    rating: 5,
+    avatar: require('../assets/avatars/plaza_mayor.jpg'),
+    mediaType: 'video',
+    videoUrl: 'https://example.com/testimonial_plaza.mp4', 
+    category: 'Espacios Comerciales',
+    featured: true,
+    tags: ['Navidad', 'Comercial']
+  },
+  {
+    id: 3,
+    name: 'Ana Martínez',
+    role: 'Directora de Arte - Serie "Mundo Steampunk"',
+    comment: 'La colección steampunk fue crucial para mantener la coherencia visual de la serie. El soporte técnico durante la producción fue invaluable.',
+    rating: 4,
+    avatar: require('../assets/avatars/avatar_ana.jpg'),
+    category: 'TV',
+    projectReference: 'Episodios 3-5 Temporada 2',
+    date: '02/24'
+  },
+  {
+    id: 4,
+    name: 'Museo Histórico',
+    role: 'Curador de Exposiciones',
+    comment: 'Para nuestra exposición "Época Victoriana" utilizamos sus réplicas. Los visitantes quedaron fascinados con la autenticidad de los detalles.',
+    rating: 5,
+    avatar: require('../assets/avatars/museo.jpg'),
+    projectImage: require('../assets/testimonials/exposicion_victoriana.jpg'),
+    category: 'Institucional',
+    featured: true,
+    tags: ['Museo', 'Historia']
+  }
+];
+
+
+
+contex/
+
+carcontext.js
+
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const CartContext = createContext();
+
+export const CartProvider = ({ children }) => {
+  const [cartItems, setCartItems] = useState([]);
+  const [savedCards, setSavedCards] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+
+  // ===== CARGA INICIAL UNIFICADA =====
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [savedCart, storedCards] = await Promise.all([
+          AsyncStorage.getItem('cart'),
+          AsyncStorage.getItem('savedCards')
+        ]);
+
+        // Cargar carrito con validación
+        if (savedCart) {
+          const parsed = JSON.parse(savedCart);
+          setCartItems(Array.isArray(parsed) ? parsed : []);
+        }
+
+        // Cargar tarjetas con normalización
+        if (storedCards) {
+          const parsedCards = JSON.parse(storedCards);
+          
+          if (Array.isArray(parsedCards)) {
+            // Añadir IDs a tarjetas antiguas
+            const normalizedCards = parsedCards.map(card => 
+              card.id ? card : { 
+                ...card, 
+                id: `legacy-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+              }
+            );
+            setSavedCards(normalizedCards);
+          } else {
+            setSavedCards([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Resetear en caso de error grave
+        setCartItems([]);
+        setSavedCards([]);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // ===== GUARDADO AUTOMÁTICO =====
+  useEffect(() => {
+    AsyncStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    AsyncStorage.setItem('savedCards', JSON.stringify(savedCards));
+  }, [savedCards]);
+
+  // ===== FUNCIONES MEMOIZADAS =====
+  const addToCart = useCallback((product) => {
+    if (!product?.id || typeof product.price !== 'number') return;
+
+    setCartItems(prev => {
+      const existingIndex = prev.findIndex(item => item.id === product.id);
+      
+      if (existingIndex > -1) {
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + 1
+        };
+        return updated;
+      }
+      
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  }, []);
+
+  const removeFromCart = useCallback((id) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+  }, []);
+
+  const updateQuantity = useCallback((id, action) => {
+    setCartItems(prev => 
+      prev.map(item => 
+        item.id === id ? {
+          ...item,
+          quantity: action === 'increase' 
+            ? item.quantity + 1 
+            : Math.max(1, item.quantity - 1)
+        } : item
+      )
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
+  // REQUIERE parámetro explícito ahora
+  const clearCartAfterPurchase = useCallback((purchasedItems) => {
+    setCartItems(prev => 
+      prev.filter(item => !purchasedItems.some(p => p.id === item.id))
+    );
+    setSelectedProducts([]);
+  }, []);
+
+  const toggleProductSelection = useCallback((product) => {
+    setSelectedProducts(prev => 
+      prev.some(p => p.id === product.id)
+        ? prev.filter(p => p.id !== product.id)
+        : [...prev, product]
+    );
+  }, []);
+
+  const saveCard = useCallback((cardData) => {
+    const newCard = {
+      ...cardData,
+      id: `card-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    };
+    setSavedCards(prev => [...prev, newCard]);
+  }, []);
+
+  const removeCard = useCallback((cardId) => {
+    setSavedCards(prev => prev.filter(card => card.id !== cardId));
+  }, []);
+
+  return (
+    <CartContext.Provider
+      value={{
+        cartItems,
+        savedCards,
+        selectedProducts,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        clearCartAfterPurchase,
+        toggleProductSelection,
+        saveCard,
+        removeCard
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+FavContext.js
+
+import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
+
+export const FavContext = createContext();
+
+export const FavProvider = ({ children }) => {
+    const [favorites, setFavorites] = useState([]);
+    const [isSyncing, setIsSyncing] = useState(true);
+
+    // ===== SISTEMA DE SINCRONIZACIÓN MEJORADO =====
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+            
+            const syncFavorites = async () => {
+                try {
+                    setIsSyncing(true);
+                    const saved = await AsyncStorage.getItem('favorites');
+                    if (saved && isActive) {
+                        const parsed = JSON.parse(saved);
+                        if (Array.isArray(parsed)) {
+                            setFavorites(parsed);
+                        } else {
+                            console.warn('Corrupted favorites data detected. Resetting...');
+                            await AsyncStorage.removeItem('favorites');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Syncing error:', error);
+                } finally {
+                    if (isActive) setIsSyncing(false);
+                }
+            };
+
+            syncFavorites();
+            
+            return () => { isActive = false; };
+        }, [])
+    );
+
+    // ===== PERSISTENCIA INTELIGENTE =====
+    useEffect(() => {
+        if (isSyncing) return;
+        
+        const saveFavorites = async () => {
+            try {
+                await AsyncStorage.setItem('favorites', JSON.stringify(favorites));
+            } catch (error) {
+                console.error('Persist error:', error);
+            }
+        };
+        
+        const debounce = setTimeout(saveFavorites, 500);
+        return () => clearTimeout(debounce);
+    }, [favorites, isSyncing]);
+
+    // ===== TOGGLE CON HÁPTICA Y ANIMACIÓN =====
+    const toggleFavorite = useCallback(async (product) => {
+        if (!product?.id) return;
+
+        // Feedback háptico
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        
+        setFavorites(prev => {
+            const exists = prev.some(f => f.id === product.id);
+            if (exists) {
+                return prev.filter(f => f.id !== product.id);
+            } else {
+                return [...prev, {...product, favoritedAt: new Date().toISOString()}];
+            }
+        });
+    }, []);
+
+    // ===== FUNCIONES PREMIUM =====
+    const clearFavorites = useCallback(() => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        setFavorites([]);
+    }, []);
+
+    const bulkAddFavorites = useCallback((products) => {
+        const newFavorites = products.filter(p => 
+            !favorites.some(f => f.id === p.id)
+        );
+        
+        if (newFavorites.length > 0) {
+            Haptics.selectionAsync();
+            setFavorites(prev => [
+                ...prev,
+                ...newFavorites.map(p => ({
+                    ...p,
+                    favoritedAt: new Date().toISOString()
+                }))
+            ]);
+        }
+    }, [favorites]);
+
+    const isFavorite = useCallback((productId) => {
+        return favorites.some(f => f.id === productId);
+    }, [favorites]);
+
+    const getFavoritesByCategory = useCallback((category) => {
+        return favorites.filter(f => f.category === category);
+    }, [favorites]);
+
+    // ===== OPTIMIZACIÓN DE RENDIMIENTO =====
+    const contextValue = useMemo(() => ({
+        favorites,
+        isSyncing,
+        toggleFavorite,
+        clearFavorites,
+        bulkAddFavorites,
+        isFavorite,
+        getFavoritesByCategory,
+        favoritesCount: favorites.length,
+        hasFavorites: favorites.length > 0
+    }), [favorites, isSyncing]);
+
+    return (
+        <FavContext.Provider value={contextValue}>
+            {children}
+        </FavContext.Provider>
+    );
+};
+
+
+ThemeContext.js
+
+// context/ThemeContext.js
+import React, { createContext, useState, useContext } from 'react';
+import { themes } from '../constants/theme';
+
+const ThemeContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
+  const [currentTheme, setCurrentTheme] = useState('light');
+  
+  const toggleTheme = () => {
+    setCurrentTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+  
+  const theme = themes[currentTheme];
+  
+  return (
+    <ThemeContext.Provider value={{ theme, currentTheme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => useContext(ThemeContext);
+
+
+constants/
+
+colors.js
+// colors.js
+
+// Paleta base
+const baseColors = {
+  primary: '#ff4081',
+  primaryDark: '#c60055',
+  primaryLight: '#ff79b0',
+  
+  secondary: '#03a9f4',
+  secondaryDark: '#007ac1',
+  secondaryLight: '#67daff',
+  
+  success: '#4CAF50',
+  successDark: '#388E3C',
+  successLight: '#C8E6C9',
+  
+  warning: '#FFC107',
+  warningDark: '#FFA000',
+  warningLight: '#FFECB3',
+  
+  error: '#f44336',
+  errorDark: '#d32f2f',
+  errorLight: '#ffcdd2',
+  
+  info: '#2196F3',
+  infoDark: '#1976D2',
+  infoLight: '#BBDEFB',
+  
+  neutral: '#9E9E9E',
+  neutralDark: '#616161',
+  neutralLight: '#F5F5F5',
+};
+
+// Sistema de temas
+const theme = {
+  light: {
+    ...baseColors,
+    background: '#FFFFFF',
+    surface: '#F5F5F5',
+    text: '#212121',
+    textSecondary: '#757575',
+    border: '#E0E0E0',
+    icon: '#424242',
+    accent: '#FFEB3B',
+    shadow: 'rgba(0, 0, 0, 0.12)',
+  },
+  dark: {
+    ...baseColors,
+    background: '#121212',
+    surface: '#1E1E1E',
+    text: '#FFFFFF',
+    textSecondary: '#BDBDBD',
+    border: '#424242',
+    icon: '#E0E0E0',
+    accent: '#FFD600',
+    shadow: 'rgba(0, 0, 0, 0.24)',
+  },
+};
+
+// Sistema de elevación (sombras)
+const elevation = {
+  0: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  1: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+    elevation: 1,
+  },
+  2: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  4: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  8: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+};
+
+// Exportar el sistema completo
+export const colors = theme.light; // Tema actual
+export const shadows = elevation; // Sistema de sombras
+export const palette = baseColors; // Paleta base
+export const themes = theme; // Todos los temas
+
+// Componentes específicos
+export const buttonColors = {
+  primary: {
+    background: baseColors.primary,
+    text: '#FFFFFF',
+    border: 'transparent',
+  },
+  secondary: {
+    background: baseColors.secondary,
+    text: '#FFFFFF',
+    border: 'transparent',
+  },
+  outline: {
+    background: 'transparent',
+    text: baseColors.primary,
+    border: baseColors.primary,
+  },
+};
+
+export default colors;
+
+
+theme.js
+// constants/theme.js
+
+// ========== PALETA BASE ========== //
+const baseColors = {
+  // Primarios
+  primary: '#ff4081',
+  primaryDark: '#c60055',
+  primaryLight: '#ff79b0',
+  
+  // Secundarios
+  secondary: '#03a9f4',
+  secondaryDark: '#007ac1',
+  secondaryLight: '#67daff',
+  
+  // Estados
+  success: '#4CAF50',
+  successDark: '#388E3C',
+  successLight: '#C8E6C9',
+  
+  warning: '#FFC107',
+  warningDark: '#FFA000',
+  warningLight: '#FFECB3',
+  
+  error: '#f44336',
+  errorDark: '#d32f2f',
+  errorLight: '#ffcdd2',
+  
+  info: '#2196F3',
+  infoDark: '#1976D2',
+  infoLight: '#BBDEFB',
+  
+  // Neutrales
+  neutral: '#9E9E9E',
+  neutralDark: '#616161',
+  neutralLight: '#F5F5F5',
+  
+  // Grises
+  gray50: '#FAFAFA',
+  gray100: '#F5F5F5',
+  gray200: '#EEEEEE',
+  gray300: '#E0E0E0',
+  gray400: '#BDBDBD',
+  gray500: '#9E9E9E',
+  gray600: '#757575',
+  gray700: '#616161',
+  gray800: '#424242',
+  gray900: '#212121',
+};
+
+// ========== SISTEMA DE TEMAS ========== //
+const theme = {
+  light: {
+    ...baseColors,
+    
+    // Fondo
+    background: '#FFFFFF',
+    surface: '#F5F5F5',
+    
+    // Texto
+    text: '#212121',
+    textSecondary: '#757575',
+    textDisabled: '#BDBDBD',
+    
+    // Bordes
+    border: '#E0E0E0',
+    borderLight: '#EEEEEE',
+    
+    // Iconos
+    icon: '#424242',
+    
+    // Elementos especiales
+    accent: '#FFEB3B',
+    divider: 'rgba(0, 0, 0, 0.12)',
+    
+    // Sombras
+    shadow: 'rgba(0, 0, 0, 0.12)',
+    
+    // Componentes
+    card: '#FFFFFF',
+    button: baseColors.primary,
+    input: '#FFFFFF',
+  },
+  
+  dark: {
+    ...baseColors,
+    
+    // Fondo
+    background: '#121212',
+    surface: '#1E1E1E',
+    
+    // Texto
+    text: '#FFFFFF',
+    textSecondary: '#BDBDBD',
+    textDisabled: '#757575',
+    
+    // Bordes
+    border: '#424242',
+    borderLight: '#616161',
+    
+    // Iconos
+    icon: '#E0E0E0',
+    
+    // Elementos especiales
+    accent: '#FFD600',
+    divider: 'rgba(255, 255, 255, 0.12)',
+    
+    // Sombras
+    shadow: 'rgba(0, 0, 0, 0.24)',
+    
+    // Componentes
+    card: '#1E1E1E',
+    button: baseColors.primaryLight,
+    input: '#2D2D2D',
+  },
+};
+
+// ========== SISTEMA DE SOMBRAS ========== //
+const elevation = {
+  0: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  1: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+    elevation: 1,
+  },
+  2: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  4: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  8: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  16: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8.65,
+    elevation: 16,
+  },
+};
+
+// ========== EXPORTACIONES ========== //
+export const colors = theme.light; // Tema por defecto
+export const shadows = elevation;
+export const palette = baseColors;
+export const themes = theme; // Ambos temas
+
+// ========== COLORS FOR COMPONENTS ========== //
+export const buttonColors = {
+  primary: {
+    background: baseColors.primary,
+    text: '#FFFFFF',
+    border: 'transparent',
+  },
+  secondary: {
+    background: baseColors.secondary,
+    text: '#FFFFFF',
+    border: 'transparent',
+  },
+  outline: {
+    background: 'transparent',
+    text: baseColors.primary,
+    border: baseColors.primary,
+  },
+  disabled: {
+    background: baseColors.gray300,
+    text: baseColors.gray600,
+    border: baseColors.gray400,
+  },
+};
+
+export const textColors = {
+  primary: theme.light.text,
+  secondary: theme.light.textSecondary,
+  disabled: theme.light.textDisabled,
+  error: baseColors.error,
+  success: baseColors.success,
+  warning: baseColors.warning,
+  info: baseColors.info,
+};
+
+export default colors;
+
+components/
+
+CategoryCard.js
+
+import React from 'react';
+import { View, Text, Image, StyleSheet, Pressable, Animated } from 'react-native';
+
+const CategoryCard = ({ category, isActive = false, onPress }) => {
+  const scaleValue = new Animated.Value(1);
+  
+  if (!category) return null;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.95,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 6,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+    
+    if (onPress) {
+      setTimeout(() => onPress(category), 100);
+    }
+  };
+
+  return (
+    <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityLabel={category.name}
+      accessibilityHint={`Ver productos de ${category.name}`}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+    >
+      <Animated.View 
+        style={[
+          styles.card,
+          isActive && styles.activeCard,
+          { transform: [{ scale: scaleValue }] }
+        ]}
+      >
+        <View style={styles.imageContainer}>
+          <Image 
+            source={category.image} 
+            style={styles.image} 
+            resizeMode="cover"
+            accessibilityLabel={`Categoría ${category.name}`}
+          />
+          {isActive && (
+            <View style={styles.activeIndicator}>
+              <Text style={styles.activeText}>✓</Text>
+            </View>
+          )}
+        </View>
+        <Text 
+          style={[
+            styles.label,
+            isActive && styles.activeLabel
+          ]}
+        >
+          {category.name}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+export default CategoryCard;
+
+const styles = StyleSheet.create({
+  card: {
+    marginHorizontal: 8,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    width: 110,
+    height: 140,
+    justifyContent: 'space-between',
+  },
+  activeCard: {
+    backgroundColor: '#FFF8E1',
+    borderWidth: 2,
+    borderColor: '#FFD600',
+  },
+  imageContainer: {
+    position: 'relative',
+  },
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f5f5f5',
+  },
+  label: {
+    marginTop: 8,
+    fontWeight: '700',
+    color: '#333',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  activeLabel: {
+    color: '#D32F2F',
+    fontWeight: '800',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#4CAF50',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  activeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+});
+
+ProductCard.js
+
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, Pressable, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const ProductCard = ({ product, onPress, onFavoritePress }) => {
+  const [scaleValue] = useState(new Animated.Value(1));
+  const [favoriteScale] = useState(new Animated.Value(1));
+  
+  if (!product) return null;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.97,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 6,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleFavoritePress = () => {
+    if (onFavoritePress) {
+      Animated.sequence([
+        Animated.spring(favoriteScale, {
+          toValue: 1.3,
+          friction: 3,
+          useNativeDriver: true,
+        }),
+        Animated.spring(favoriteScale, {
+          toValue: 1,
+          friction: 6,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      
+      setTimeout(() => onFavoritePress(product), 200);
+    }
+  };
+
+  const renderProfessionalBadge = () => {
+    return (
+      <View style={styles.proBadge}>
+        <Text style={styles.proBadgeText}>PRO</Text>
+      </View>
+    );
+  };
+
+  const renderMaterialBadge = () => {
+    if (product.material) {
+      return (
+        <View style={styles.materialBadge}>
+          <Text style={styles.materialText}>{product.material}</Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
+  const renderTags = () => {
+    if (product.tags && product.tags.length > 0) {
+      return (
+        <View style={styles.tagsContainer}>
+          {product.tags.map((tag, index) => (
+            <View key={index} style={styles.tag}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityLabel={`Producto profesional: ${product.name}, Precio: $${product.price}`}
+      accessibilityRole="button"
+    >
+      <Animated.View style={[styles.card, { transform: [{ scale: scaleValue }] }]}>
+        <View style={styles.imageContainer}>
+          <Image 
+            source={product.image} 
+            style={styles.image} 
+            resizeMode="contain"
+            accessibilityLabel={`Imagen de ${product.name}`}
+          />
+          
+          {renderProfessionalBadge()}
+          
+          <Pressable 
+            style={styles.favoriteButton}
+            onPress={handleFavoritePress}
+            accessibilityLabel={product.isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+            accessibilityRole="button"
+          >
+            <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
+              <Ionicons 
+                name={product.isFavorite ? "heart" : "heart-outline"} 
+                size={24} 
+                color={product.isFavorite ? "#d32f2f" : "#333"} 
+              />
+            </Animated.View>
+          </Pressable>
+        </View>
+        
+        <View style={styles.info}>
+          <Text 
+            style={styles.name} 
+            numberOfLines={2}
+            accessibilityLabel={`Nombre: ${product.name}`}
+          >
+            {product.name}
+          </Text>
+          
+          <Text style={styles.category} numberOfLines={1}>
+            {product.category}
+          </Text>
+          
+          {renderMaterialBadge()}
+          {renderTags()}
+          
+          <View style={styles.priceContainer}>
+            <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          </View>
+          
+          <View style={styles.shippingBadge}>
+            <Ionicons name="rocket" size={14} color="#4CAF50" />
+            <Text style={styles.shippingText}>Entrega exprés</Text>
+          </View>
+        </View>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+export default ProductCard;
+
+const styles = StyleSheet.create({
+  card: {
+    width: 170,
+    margin: 8,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  imageContainer: {
+    position: 'relative',
+    height: 160,
+    backgroundColor: '#f9f9f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  image: {
+    width: '80%',
+    height: '80%',
+    resizeMode: 'contain',
+  },
+  proBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: '#1976D2',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  proBadgeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  materialBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: '#7B1FA2',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  materialText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 10,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  info: {
+    padding: 12,
+  },
+  name: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+    minHeight: 40,
+  },
+  category: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+  },
+  priceContainer: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  price: {
+    fontWeight: 'bold',
+    color: '#d32f2f',
+    fontSize: 16,
+  },
+  shippingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+  },
+  shippingText: {
+    fontSize: 11,
+    color: '#2E7D32',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  tag: {
+    backgroundColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    marginRight: 4,
+    marginBottom: 4,
+  },
+  tagText: {
+    fontSize: 10,
+    color: '#424242',
+  },
+});
+
+PromoCard.js
+
+import React from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.85;
+
+const PromoCard = ({ item }) => {
+  return (
+    <TouchableOpacity 
+      style={styles.container}
+      activeOpacity={0.9}
+      accessibilityLabel={`Promoción: ${item.title}`}
+      accessibilityHint={item.subtitle}
+    >
+      <Image source={item.image} style={styles.image} resizeMode="cover" />
+      
+      <View style={styles.contentOverlay}>
+        <View style={styles.textContainer}>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>OFERTA</Text>
+          </View>
+          
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.subtitle}>{item.subtitle}</Text>
+          
+          <View style={styles.ctaContainer}>
+            <Text style={styles.ctaText}>VER AHORA</Text>
+            <View style={styles.arrowIcon}>
+              <Text style={styles.arrow}>➔</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      
+      <View style={styles.countdown}>
+        <Text style={styles.countdownText}>FINALIZA EN: 2D 15H</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+export default PromoCard;
+
+const styles = StyleSheet.create({
+  container: {
+    width: CARD_WIDTH,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginHorizontal: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+  },
+  contentOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  textContainer: {
+    paddingBottom: 10,
+  },
+  badge: {
+    backgroundColor: '#d32f2f',
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  badgeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+    letterSpacing: 0.5,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  subtitle: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 15,
+    lineHeight: 22,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  ctaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+  },
+  ctaText: {
+    color: '#FFD600',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  arrowIcon: {
+    marginLeft: 10,
+    backgroundColor: '#FFD600',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrow: {
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  countdown: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  countdownText: {
+    color: '#d32f2f',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+});
+
+TestimonialCard.js
+
+import React from 'react';
+import { View, Text, StyleSheet, Image, Pressable, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const TestimonialCard = ({ item, onPress }) => {
+  const scaleValue = new Animated.Value(1);
+  
+  const handlePressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.97,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityLabel={`Testimonio de ${item.name}, calificación ${item.rating}/5`}
+    >
+      <Animated.View 
+        style={[
+          styles.card, 
+          { transform: [{ scale: scaleValue }] }
+        ]}
+      >
+        <View style={styles.header}>
+          {item.avatar ? (
+            <Image 
+              source={item.avatar} 
+              style={styles.avatar} 
+              accessibilityLabel={`Avatar de ${item.name}`}
+            />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons name="person" size={24} color="#666" />
+            </View>
+          )}
+          
+          <View style={styles.userInfo}>
+            <Text 
+              style={styles.name}
+              accessibilityLabel={`Cliente: ${item.name}`}
+            >
+              {item.name}
+            </Text>
+            <View 
+              style={styles.ratingContainer}
+              accessibilityLabel={`Calificación: ${item.rating} de 5 estrellas`}
+            >
+              {[...Array(5)].map((_, i) => (
+                <Ionicons
+                  key={i}
+                  name={i < item.rating ? "star" : "star-outline"}
+                  size={18}
+                  color="#FFD700"
+                  accessibilityElementsHidden={true}
+                />
+              ))}
+              <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+            </View>
+          </View>
+        </View>
+        
+        <Text 
+          style={styles.comment}
+          accessibilityLabel={`Comentario: ${item.comment}`}
+        >
+          "{item.comment}"
+        </Text>
+        
+        <View style={styles.footer}>
+          <Text style={styles.date} accessibilityLabel={`Fecha: ${item.date}`}>
+            {item.date}
+          </Text>
+          {item.verified && (
+            <View style={styles.verifiedBadge}>
+              <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
+              <Text style={styles.verifiedText}>Verificado</Text>
+            </View>
+          )}
+        </View>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+export default TestimonialCard;
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginRight: 16,
+    width: 300,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
+    backgroundColor: '#f5f5f5',
+  },
+  avatarPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  userInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 4,
+    fontFamily: 'sans-serif-medium',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  comment: {
+    fontSize: 15,
+    color: '#444',
+    lineHeight: 22,
+    fontStyle: 'italic',
+    marginBottom: 15,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 12,
+  },
+  date: {
+    fontSize: 12,
+    color: '#888',
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  verifiedText: {
+    fontSize: 12,
+    color: '#2E7D32',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+});
+
